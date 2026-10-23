@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CloudGuard – IaC Security Scanner</title>
+<style>
+  *{box-sizing:border-box} body{margin:0;font-family:system-ui,Segoe UI,Arial;background:#0f172a;color:#e2e8f0}
+  header{padding:20px 32px;background:#111c33;border-bottom:1px solid #1e293b}
+  header h1{margin:0;font-size:24px} header p{margin:4px 0 0;color:#94a3b8;font-size:14px}
+  main{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:24px 32px}
+  @media(max-width:900px){main{grid-template-columns:1fr}}
+  .card{background:#111c33;border:1px solid #1e293b;border-radius:12px;padding:20px}
+  textarea{width:100%;height:380px;background:#0b1222;color:#cbd5e1;border:1px solid #334155;border-radius:8px;padding:12px;font-family:Consolas,monospace;font-size:13px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center}
+  button,.btn{background:#2563eb;color:#fff;border:0;border-radius:8px;padding:10px 16px;font-weight:600;cursor:pointer;text-decoration:none;font-size:14px}
+  .btn.ghost{background:#1e293b}
+  .score{display:flex;align-items:center;gap:20px}
+  .ring{width:110px;height:110px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:32px;font-weight:800;border:8px solid}
+  .ring small{font-size:13px;font-weight:600}
+  .A{border-color:#22c55e;color:#22c55e}.B{border-color:#84cc16;color:#84cc16}.C{border-color:#f59e0b;color:#f59e0b}.F{border-color:#ef4444;color:#ef4444}
+  .pill{padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700}
+  .HIGH{background:#7f1d1d;color:#fecaca}.MEDIUM{background:#78350f;color:#fde68a}.LOW{background:#1e3a8a;color:#bfdbfe}
+  .f{border-top:1px solid #1e293b;padding:12px 0} .f b{font-size:14px} .f p{margin:6px 0 0;font-size:13px;color:#94a3b8}
+  .fix{color:#86efac!important} code{color:#93c5fd}
+  .ok{padding:30px;text-align:center;color:#86efac;font-weight:600}
+</style>
+</head>
+<body>
+<header>
+  <h1>🛡️ CloudGuard</h1>
+  <p>Infrastructure-as-Code security scanner for AWS Terraform — shift-left DevSecOps</p>
+</header>
+<main>
+  <section class="card">
+    <h3 style="margin-top:0">Terraform code</h3>
+    <form method="post" enctype="multipart/form-data" action="/">
+      <textarea name="code" placeholder="Paste your .tf code here...">{{ code }}</textarea>
+      <div class="row">
+        <button type="submit">Scan</button>
+        <input type="file" name="file" accept=".tf,.txt">
+      </div>
+    </form>
+    <div class="row">
+      <a class="btn ghost" href="/sample/bad">Load insecure sample</a>
+      <a class="btn ghost" href="/sample/good">Load secure sample</a>
+    </div>
+  </section>
+
+  <section class="card">
+    <h3 style="margin-top:0">Scan report</h3>
+    {% if result %}
+      <div class="score">
+        <div class="ring {{ result.grade }}">{{ result.score }}<small>Grade {{ result.grade }}</small></div>
+        <div>
+          <div>{{ result.resources }} resources scanned</div>
+          <div class="row">
+            <span class="pill HIGH">{{ result.counts.HIGH }} High</span>
+            <span class="pill MEDIUM">{{ result.counts.MEDIUM }} Medium</span>
+            <span class="pill LOW">{{ result.counts.LOW }} Low</span>
+          </div>
+        </div>
+      </div>
+      {% if result.findings %}
+        {% for f in result.findings %}
+        <div class="f">
+          <span class="pill {{ f.severity }}">{{ f.severity }}</span>
+          <b>{{ f.rule }}</b> · <code>{{ f.resource }}</code> · line {{ f.line }}
+          <p>{{ f.message }}</p>
+          <p class="fix">Fix: {{ f.fix }}</p>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="ok">✅ No misconfigurations found. Safe to deploy.</div>
+      {% endif %}
+    {% else %}
+      <p style="color:#94a3b8">Paste Terraform code or load a sample, then press Scan.</p>
+    {% endif %}
+  </section>
+</main>
+</body>
+</html>
